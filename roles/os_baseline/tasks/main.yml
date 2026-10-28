@@ -1,0 +1,41 @@
+---
+- name: Remove unapproved legacy packages
+  ansible.builtin.package:
+    name: "{{ unwanted_packages }}"
+    state: absent
+
+- name: Install required baseline packages
+  ansible.builtin.package:
+    name: "{{ required_packages }}"
+    state: present
+
+- name: Disable unused filesystem kernel modules (CIS 1.1.1)
+  ansible.builtin.copy:
+    dest: "/etc/modprobe.d/{{ item }}.conf"
+    content: "install {{ item }} /bin/true\nblacklist {{ item }}\n"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ disabled_filesystems }}"
+
+- name: Configure Chrony NTP service
+  ansible.builtin.template:
+    src: chrony.conf.j2
+    dest: /etc/chrony.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart chrony
+
+- name: Ensure Chrony service is enabled and started
+  ansible.builtin.systemd:
+    name: chronyd
+    enabled: true
+    state: started
+
+- name: Enforce strict default umask (027) in /etc/profile
+  ansible.builtin.lineinfile:
+    path: /etc/profile
+    regexp: '^umask\s+'
+    line: 'umask 027'
+    state: present
