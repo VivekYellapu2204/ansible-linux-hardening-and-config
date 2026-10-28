@@ -1,0 +1,53 @@
+---
+# Global Network & Time Configuration
+ntp_servers:
+  - 169.254.169.123  # AWS Local Time Sync Service
+  - 0.amazon.pool.ntp.org
+
+# SSH Hardening Configuration
+ssh_port: 22
+ssh_permit_root_login: "no"
+ssh_password_authentication: "no"
+ssh_x11_forwarding: "no"
+ssh_max_auth_tries: 3
+ssh_client_alive_interval: 300
+ssh_client_alive_count_max: 0
+
+# Legacy & Prohibited Filesystems
+disabled_filesystems:
+  - cramfs
+  - freevxfs
+  - jffs2
+  - hfs
+  - hfsplus
+  - squashfs
+  - udf
+
+# Kernel Network Parameters (sysctl)
+sysctl_settings:
+  net.ipv4.ip_forward: 0
+  net.ipv4.conf.all.send_redirects: 0
+  net.ipv4.conf.default.send_redirects: 0
+  net.ipv4.conf.all.accept_source_route: 0
+  net.ipv4.conf.default.accept_source_route: 0
+  net.ipv4.conf.all.accept_redirects: 0
+  net.ipv4.conf.default.accept_redirects: 0
+  net.ipv4.conf.all.secure_redirects: 0
+  net.ipv4.conf.default.secure_redirects: 0
+  net.ipv4.conf.all.log_martians: 1
+  net.ipv4.conf.default.log_martians: 1
+  net.ipv4.icmp_echo_ignore_broadcasts: 1
+  net.ipv4.icmp_ignore_bogus_error_responses: 1
+  net.ipv4.conf.all.rp_filter: 1
+  net.ipv4.conf.default.rp_filter: 1
+  net.ipv4.tcp_syncookies: 1
+  kernel.randomize_va_space: 2
+
+# Auditd Rules Configuration
+audit_files:
+  - { path: "/etc/passwd", key: "identity_changes" }
+  - { path: "/etc/shadow", key: "identity_changes" }
+  - { path: "/etc/group", key: "identity_changes" }
+  - { path: "/etc/gshadow", key: "identity_changes" }
+  - { path: "/etc/sudoers", key: "privilege_changes" }
+  - { path: "/etc/sudoers.d", key: "privilege_changes" }
