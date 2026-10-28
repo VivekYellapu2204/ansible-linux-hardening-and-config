@@ -1,0 +1,35 @@
+---
+- name: Comprehensive Fleet Security Baseline and Hardening
+  hosts: all
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Verify execution target compatibility
+      ansible.builtin.assert:
+        that:
+          - ansible_os_family in ['RedHat', 'Debian']
+        fail_msg: "Unsupported Linux distribution. Playbook execution aborted."
+
+  roles:
+    - role: os_baseline
+      tags: [baseline]
+    - role: security_ssh
+      tags: [ssh]
+    - role: security_sysctl
+      tags: [sysctl]
+    - role: security_auditd
+      tags: [auditd]
+
+  post_tasks:
+    - name: Validate that SSH root login is disabled
+      ansible.builtin.command: /usr/sbin/sshd -T
+      register: sshd_verification
+      changed_when: false
+      failed_when: "'permitrootlogin no' not in sshd_verification.stdout"
+
+    - name: Validate address space layout randomization (ASLR)
+      ansible.builtin.slurp:
+        src: /proc/sys/kernel/randomize_va_space
+      register: aslr_status
+      failed_when: aslr_status.content | b64decode | trim != "2"
