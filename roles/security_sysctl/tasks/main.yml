@@ -1,0 +1,11 @@
+---
+- name: Apply security-hardened sysctl configuration parameters
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value | string }}"
+    sysctl_file: "{{ sysctl_conf_path }}"
+    state: present
+    sysctl_set: true
+    reload: true
+  loop: "{{ sysctl_settings | dict2items }}"
+  notify: Reload sysctl
