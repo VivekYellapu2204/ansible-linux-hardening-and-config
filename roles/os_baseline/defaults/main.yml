@@ -1,0 +1,15 @@
+---
+required_packages:
+  - curl
+  - jq
+  - chrony
+  - libselinux-python3
+  - tar
+  - unzip
+
+unwanted_packages:
+  - telnet
+  - rsh
+  - ypbind
+  - ypserv
+  - tftp
