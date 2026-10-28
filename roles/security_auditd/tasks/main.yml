@@ -1,0 +1,34 @@
+---
+- name: Ensure auditd and audit-libs are installed
+  ansible.builtin.package:
+    name:
+      - audit
+      - audit-libs
+    state: present
+
+- name: Configure audit rules for file system integrity tracking
+  ansible.builtin.lineinfile:
+    path: "{{ auditd_rules_path }}"
+    line: "-w {{ item.path }} -p wa -k {{ item.key }}"
+    create: true
+    owner: root
+    group: root
+    mode: '0640'
+  loop: "{{ audit_files }}"
+  notify: Reload audit rules
+
+- name: Configure kernel command-line auditing persistence (-e 2)
+  ansible.builtin.lineinfile:
+    path: "{{ auditd_rules_path }}"
+    line: "-e 2"
+    create: true
+    owner: root
+    group: root
+    mode: '0640'
+  notify: Reload audit rules
+
+- name: Ensure auditd daemon is running and enabled at boot
+  ansible.builtin.systemd:
+    name: auditd
+    state: started
+    enabled: true
