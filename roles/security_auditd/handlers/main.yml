@@ -1,0 +1,4 @@
+---
+- name: Reload audit rules
+  ansible.builtin.command: /sbin/augenrules --load
+  changed_when: true
