@@ -1,0 +1,14 @@
+[all:vars]
+ansible_user=ec2-user
+ansible_connection=ssh
+
+[webservers]
+app-node-01 ansible_host=10.100.10.15
+app-node-02 ansible_host=10.100.11.22
+
+[databases]
+db-node-01 ansible_host=10.100.20.50
+
+[production:children]
+webservers
+databases
