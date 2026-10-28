@@ -1,0 +1,40 @@
+---
+- name: Post-Rehydration Server Health and Security Verification
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Check that auditd daemon is active and running
+      ansible.builtin.systemd:
+        name: auditd
+        state: started
+      check_mode: true
+      register: auditd_check
+      failed_when: auditd_check.changed
+
+    - name: Check that chronyd daemon is active and running
+      ansible.builtin.systemd:
+        name: chronyd
+        state: started
+      check_mode: true
+      register: chrony_check
+      failed_when: chrony_check.changed
+
+    - name: Ensure root login remains disabled in active sshd runtime
+      ansible.builtin.command: /usr/sbin/sshd -T
+      register: runtime_sshd
+      changed_when: false
+      failed_when: "'permitrootlogin no' not in runtime_sshd.stdout"
+
+    - name: Assert IP forwarding remains deactivated
+      ansible.builtin.slurp:
+        src: /proc/sys/net/ipv4/ip_forward
+      register: ip_forward_check
+      failed_when: ip_forward_check.content | b64decode | trim != "0"
+
+    - name: Confirm target node is reporting NTP synchronization
+      ansible.builtin.command: chronyc tracking
+      register: chrony_tracking
+      changed_when: false
+      failed_when: chrony_tracking.rc != 0
